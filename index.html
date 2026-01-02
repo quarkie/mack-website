@@ -3,149 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MACK-RB.DE :: System Status</title>
+    <title>MACK-RB.DE</title>
     <style>
-        /* --- INTERNES CSS: SOLARIZED DARK ASCIIDOC STYLE ---
-           Keine externen Ressourcen. Pure CSS Magic.
-        */
-
+        /* --- INTERNES CSS: SOLARIZED DARK ASCIIDOC STYLE --- */
         :root {
-            /* Solarized Dark Palette */
-            --base03:    #002b36; /* Background Dark */
-            --base02:    #073642; /* Background Lighter */
-            --base01:    #586e75; /* Comments/Secondary */
+            --base03:    #002b36;
+            --base02:    #073642;
+            --base01:    #586e75;
             --base00:    #657b83;
-            --base0:     #839496; /* Primary Content */
+            --base0:     #839496;
             --base1:     #93a1a1;
-            --base2:     #eee8d5;
-            --base3:     #fdf6e3;
-            --yellow:    #b58900; /* Headers H1 */
-            --orange:    #cb4b16; /* Headers H2 */
-            --red:       #dc322f; /* Warnings */
-            --magenta:   #d33682;
-            --violet:    #6c71c4;
-            --blue:      #268bd2; /* Links */
-            --cyan:      #2aa198; /* List Markers */
-            --green:     #859900; /* Admonitions */
+            --yellow:    #b58900;
         }
 
         body {
             background-color: var(--base03);
             color: var(--base0);
-            /* Prioritize system monospace fonts */
-            font-family: 'Fira Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-family: 'Fira Code', 'Roboto Mono', Consolas, monospace;
             font-size: 16px;
-            line-height: 1.6;
             margin: 0;
             padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
         }
 
-        /* --- ASCIIDOC SYNTAX EMULATION VIA CSS --- */
-
-        /* Document Title (=) */
+        /* Title (=) */
         h1 {
             color: var(--base1);
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             border-bottom: 2px solid var(--base02);
-            padding-bottom: 0.5rem;
-            margin-top: 0;
+            padding-bottom: 1rem;
+            margin-bottom: 4rem;
+            display: inline-block;
+            text-align: left; /* AsciiDoc Look preserving */
         }
         h1::before { content: "= "; color: var(--yellow); }
 
-        /* Section Title (==) */
-        h2 {
-            color: var(--base1);
-            font-size: 1.5rem;
-            margin-top: 2rem;
-        }
-        h2::before { content: "== "; color: var(--orange); }
-
-        /* Preamble/Normal Text */
-        p { margin-bottom: 1.5rem; }
-
-        /* Links */
-        a {
-            color: var(--blue);
-            text-decoration: none;
-            border-bottom: 1px dotted var(--blue);
-            transition: all 0.3s ease;
-        }
-        a:hover {
-            background-color: var(--base02);
-            color: var(--base1);
-        }
-        /* AsciiDoc Link Syntax Styling brackets [...] */
-        a::before { content: "["; color: var(--base01); }
-        a::after { content: "]"; color: var(--base01); }
-
-
-        /* Lists (*) */
-        ul {
-            list-style: none;
-            padding-left: 1.5rem;
-        }
-        ul li {
-            margin-bottom: 0.5rem;
-            position: relative;
-        }
-        ul li::before {
-            content: "* ";
-            color: var(--cyan);
-            position: absolute;
-            left: -1.5rem;
-            font-weight: bold;
-        }
-
-        /* Code Blocks (----) */
-        .listing-block {
-            background-color: var(--base02);
-            border: 1px solid var(--base01);
-            padding: 1rem;
-            margin: 1.5rem 0;
-            position: relative;
-            color: var(--base1);
-        }
-        /* Visual delimiters */
-        .listing-block::before { content: "----"; display: block; color: var(--base01); margin-bottom: 0.5rem;}
-        .listing-block::after { content: "----"; display: block; color: var(--base01); margin-top: 0.5rem; }
-        
-
-        /* Admonition Blocks ([NOTE]) */
-        .admonition-block {
-            background-color: rgba(38, 139, 210, 0.1); /* Blue tint */
-            border-left: 5px solid var(--blue);
-            padding: 1rem;
-            margin: 1.5rem 0;
-        }
-        .admonition-block.note::before {
-            content: "[NOTE]";
-            display: block;
-            font-weight: bold;
-            color: var(--blue);
-            margin-bottom: 0.5rem;
-        }
-        .admonition-block.important {
-             border-left-color: var(--red);
-             background-color: rgba(220, 50, 47, 0.1);
-        }
-        .admonition-block.important::before {
-            content: "[IMPORTANT]";
-            color: var(--red);
-        }
-
-        /* Footer area */
+        /* Footer */
         footer {
-            margin-top: 4rem;
-            padding-top: 1rem;
             border-top: 1px dashed var(--base01);
-            font-size: 0.9rem;
+            padding-top: 1rem;
+            font-size: 0.8rem;
             color: var(--base01);
-            text-align: center;
         }
     </style>
 </head>
@@ -153,61 +61,10 @@
 
 <div class="container">
 
-    <h1>MACK-RB.DE :: System Status</h1>
-
-    <p>
-        Dies ist die temporäre Landing Page für mack-rb.de. 
-        Das System befindet sich derzeit im Aufbau.
-    </p>
-    <p>
-        Diese Seite wurde bewusst minimalistisch gestaltet, um externen Traffic zu minimieren und die Unabhängigkeit von Drittanbieter-Ressourcen (CDNs, Fonts, Frameworks) zu demonstrieren.
-    </p>
-
-    <h2>Infrastruktur Übersicht</h2>
-
-    <p>
-        Die zugrundeliegende Plattform basiert auf einem physischen 2-Node Cluster plus Quorum-Device, verwaltet durch striktes Infrastructure as Code (IaC).
-    </p>
-
-    <ul>
-        <li>Node 01: HP t740 (Proxmox VE)</li>
-        <li>Node 02: HP t740 (Proxmox VE)</li>
-        <li>QDevice: Raspberry Pi (Corosync)</li>
-        <li>Storage: Lokales NVMe (TLC NAND)</li>
-    </ul>
-
-    <h2>Deployment Strategie</h2>
-
-    <div class="admonition-block note">
-        Manuelle Eingriffe auf der Hardware sind auf die initiale IP-Vergabe beschränkt.
-    </div>
-
-    <p>
-        Die gesamte Konfiguration erfolgt deklarativ. Änderungen am Systemstatus werden ausschließlich über Versionskontrolle und CI/CD-Pipelines eingespielt.
-    </p>
-
-    <div class="listing-block">
-# Terraform State Beispielauszug
-
-resource "proxmox_vm_qemu" "docker_host" {
-  name        = "mack-ops-vm"
-  target_node = "pve-01"
-  cores       = 2
-  memory      = 4096
-  # ...
-  # Cloudflare Scoped Token Injection via Vault
-}
-    </div>
-
-    <h2>Kontakt & Links</h2>
-
-    <ul>
-        <li><a href="https://www.linkedin.com/">LinkedIn Profil</a></li>
-        <li><a href="https://github.com/">GitHub Profil</a></li>
-    </ul>
+    <h1>MACK-RB.DE</h1>
 
     <footer>
-        &copy; 2024 mack-rb.de | Rendered in pure CSS AsciiDoc Style. Zero External Requests.
+        &copy; 2026
     </footer>
 
 </div>
