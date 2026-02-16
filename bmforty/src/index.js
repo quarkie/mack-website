@@ -285,6 +285,7 @@ Gem&uuml;tliche Gartenfeier bei mir zu Hause.</p>
 
   function submit(status) {
     if (!isValid()) return;
+    var payloadCount = status === 'nein' ? '' : (form.elements['count'].value || '');
 
     fetch('/rsvp', {
       method: 'POST',
@@ -292,7 +293,7 @@ Gem&uuml;tliche Gartenfeier bei mir zu Hause.</p>
       body: JSON.stringify({
         p: route,
         n: form.elements['name'].value.trim(),
-        c: form.elements['count'].value || '',
+        c: payloadCount,
         s: status,
         w: form.elements['website'].value,
         v: getCookie('vid') || ''
@@ -740,7 +741,7 @@ export default {
         }
 
         const name = (n || '').trim().slice(0, 200);
-        const countRaw = String(c || '').trim();
+        const countRaw = s === 'nein' ? '' : String(c || '').trim();
         const countNum = countRaw ? parseInt(countRaw, 10) : null;
 
         if (!name && !countRaw) {
