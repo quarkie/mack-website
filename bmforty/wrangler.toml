@@ -1,0 +1,14 @@
+name = "bmforty"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+routes = [
+  { pattern = "40.mack-dev.de/*", zone_name = "mack-dev.de" }
+]
+
+[assets]
+directory = "./public"
+
+[[kv_namespaces]]
+binding = "RSVP"
+id = "98346c4717e04c88a4d72172ffed84dc"
