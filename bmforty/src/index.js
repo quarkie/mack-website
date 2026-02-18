@@ -13,6 +13,7 @@ function renderPage(path) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <title>40</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
 <style>
@@ -33,7 +34,7 @@ function renderPage(path) {
   --form-text: #e8e8e8;
 }
 body {
-  max-width: 540px;
+  max-width: 600px;
   width: 100%;
   margin: 0 auto;
   padding: 0;
@@ -41,6 +42,9 @@ body {
   background: #0a0c0b;
   color: #e8e8e8;
   font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 .hero {
   position: relative;
@@ -49,7 +53,9 @@ body {
 }
 .hero img {
   width: 100%;
-  height: auto;
+  max-height: 50vh;
+  object-fit: cover;
+  object-position: center 62%;
   display: block;
 }
 .hero-overlay {
@@ -77,7 +83,7 @@ body {
   text-transform: uppercase;
   margin: 0;
 }
-.content { padding: 0 1.5rem 2rem; margin-top: -0.3rem; overflow: visible; }
+.content { padding: 0 1.5rem 2rem; margin-top: -0.3rem; overflow: visible; flex: 1; }
 p { font-size: 1.1rem; line-height: 1.7; }
 .gift {
   border-left: 4px solid var(--accent);
@@ -100,7 +106,7 @@ p { font-size: 1.1rem; line-height: 1.7; }
 }
 @media (max-width: 480px) {
   .hero { margin-bottom: .8rem; }
-  .hero img { max-height: 33vh; object-fit: cover; object-position: center 62%; }
+  .hero img { max-height: 33vh; }
   .hero-overlay { padding: 1.1rem 1rem .8rem; }
   .content { padding: 0 1rem 1.2rem; margin-top: 0; }
   .form-grid { grid-template-columns: 1fr; }
@@ -676,6 +682,21 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+async function requireStatsAuth(request, env) {
+  const url = new URL(request.url);
+  const expectedToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
+  const cookieToken = getCookieValue(request.headers.get('Cookie'), 'stats_auth');
+  if (cookieToken !== expectedToken) {
+    return Response.redirect(`${url.origin}/stats/login`, 303);
+  }
+  return null;
+}
+
+function setStatsAuthCookie(url, authToken, maxAge = 86400) {
+  const secureAttr = url.protocol === 'https:' ? '; Secure' : '';
+  return `stats_auth=${authToken}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secureAttr}`;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -792,24 +813,16 @@ export default {
       }
 
       const authToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
-      const secureAttr = url.protocol === 'https:' ? '; Secure' : '';
       return new Response(null, {
         status: 303,
-        headers: {
-          Location: '/stats',
-          'Set-Cookie': `stats_auth=${authToken}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400${secureAttr}`,
-        },
+        headers: { Location: '/stats', 'Set-Cookie': setStatsAuthCookie(url, authToken) },
       });
     }
 
     if (path === '/stats/logout' && request.method === 'POST') {
-      const secureAttr = url.protocol === 'https:' ? '; Secure' : '';
       return new Response(null, {
         status: 303,
-        headers: {
-          Location: '/stats/login',
-          'Set-Cookie': `stats_auth=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secureAttr}`,
-        },
+        headers: { Location: '/stats/login', 'Set-Cookie': setStatsAuthCookie(url, '', 0) },
       });
     }
 
@@ -821,24 +834,19 @@ export default {
           return Response.redirect(`${url.origin}/stats/login?error=1`, 303);
         }
         const authToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
-        const secureAttr = url.protocol === 'https:' ? '; Secure' : '';
         return new Response(null, {
           status: 303,
-          headers: {
-            Location: '/stats',
-            'Set-Cookie': `stats_auth=${authToken}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400${secureAttr}`,
-          },
+          headers: { Location: '/stats', 'Set-Cookie': setStatsAuthCookie(url, authToken) },
         });
       }
 
-      const expectedToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
-      const cookieToken = getCookieValue(request.headers.get('Cookie'), 'stats_auth');
-      if (cookieToken !== expectedToken) {
-        return Response.redirect(`${url.origin}/stats/login`, 303);
-      }
+      const denied = await requireStatsAuth(request, env);
+      if (denied) return denied;
 
-      const rsvps = await listKvByPrefix(env, 'rsvp:');
-      const visits = await listKvByPrefix(env, 'visit:');
+      const [rsvps, visits] = await Promise.all([
+        listKvByPrefix(env, 'rsvp:'),
+        listKvByPrefix(env, 'visit:'),
+      ]);
 
       const resetDone = url.searchParams.get('reset') === '1';
       return new Response(renderStats(rsvps, visits, resetDone), {
@@ -848,11 +856,8 @@ export default {
     }
 
     if (path === '/stats/traces' && request.method === 'GET') {
-      const expectedToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
-      const cookieToken = getCookieValue(request.headers.get('Cookie'), 'stats_auth');
-      if (cookieToken !== expectedToken) {
-        return Response.redirect(`${url.origin}/stats/login`, 303);
-      }
+      const denied = await requireStatsAuth(request, env);
+      if (denied) return denied;
 
       const rsvps = await listKvByPrefix(env, 'rsvp:');
       return new Response(renderAllTraces(rsvps), {
@@ -862,11 +867,8 @@ export default {
     }
 
     if (path === '/stats/export.json' && request.method === 'GET') {
-      const expectedToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
-      const cookieToken = getCookieValue(request.headers.get('Cookie'), 'stats_auth');
-      if (cookieToken !== expectedToken) {
-        return Response.redirect(`${url.origin}/stats/login`, 303);
-      }
+      const denied = await requireStatsAuth(request, env);
+      if (denied) return denied;
 
       const rows = buildTraceExportRows(await listKvByPrefix(env, 'rsvp:'));
       return new Response(JSON.stringify(rows, null, 2), {
@@ -879,11 +881,8 @@ export default {
     }
 
     if (path === '/stats/export.csv' && request.method === 'GET') {
-      const expectedToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
-      const cookieToken = getCookieValue(request.headers.get('Cookie'), 'stats_auth');
-      if (cookieToken !== expectedToken) {
-        return Response.redirect(`${url.origin}/stats/login`, 303);
-      }
+      const denied = await requireStatsAuth(request, env);
+      if (denied) return denied;
 
       const rows = buildTraceExportRows(await listKvByPrefix(env, 'rsvp:'));
       const cols = ['ts', 'createdAt', 'editedAt', 'group', 'name', 'count', 'status', 'visitorId', 'ipMasked', 'ipHash', 'country', 'region', 'city', 'colo', 'asn', 'org', 'lang', 'ref', 'ua', 'tls', 'botScore'];
@@ -901,11 +900,8 @@ export default {
     }
 
     if (path === '/stats/reset' && request.method === 'POST') {
-      const expectedToken = await sha256Hex(`stats:${env.STATS_PASSWORD}`);
-      const cookieToken = getCookieValue(request.headers.get('Cookie'), 'stats_auth');
-      if (cookieToken !== expectedToken) {
-        return Response.redirect(`${url.origin}/stats/login`, 303);
-      }
+      const denied = await requireStatsAuth(request, env);
+      if (denied) return denied;
 
       let cursor;
       do {
