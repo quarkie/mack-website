@@ -195,18 +195,18 @@ button.nein.btn-active {
   <img src="/bg.jpeg" alt="">
   <div class="hero-overlay">
     <h1><span>40</span> Jahre</h1>
-    <div class="subline">Dienstag &mdash; 04. August 2026 &mdash; ab 16 Uhr</div>
+    <div class="subline">Dienstag — 04. August 2026 — ab 15 Uhr</div>
   </div>
 </div>
 
 <div class="content">
 
 <p>Herzliche Einladung zu meinem Geburtstag.<br>
-Gem&uuml;tliche Gartenfeier bei mir zu Hause.</p>
+Gemütliche Gartenfeier bei mir zu Hause.</p>
 
-<div class="gift">Wer unbedingt etwas schenken will: Die Urlaubskasse freut sich.</div>
+<div class="gift">Wer möchte, darf gerne unser Sparschwein für den nächsten Urlaub füllen.</div>
 
-<p class="deadline">Bitte R&uuml;ckmeldung bis 01.07. an mich oder hier &uuml;ber das Formular:</p>
+<p class="deadline">Bitte Rückmeldung bis 01.07. an mich oder hier über das Formular:</p>
 
 <form id="rsvp-form" autocomplete="off">
   <div id="existing-note" class="existing-note"></div>
