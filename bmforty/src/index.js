@@ -3,7 +3,10 @@
   '/v9m2': 'Utz',
   '/z7r5': '00WC',
   '/k4p1': 'FFW',
+  '/g2n4': 'la Gertrud',
+  '/c8h3': 'Freunde Claudia',
   '/s2t9': 'Sonstige',
+  '/j6w1': 'Jauman',
 };
 
 function renderPage(path) {
@@ -269,28 +272,35 @@ Gemütliche Gartenfeier bei mir zu Hause.</p>
     btnNein.setAttribute('aria-pressed', status === 'nein' ? 'true' : 'false');
   }
 
-  function isValid() {
+  function isValid(status) {
     var name = form.elements['name'].value.trim();
     var count = form.elements['count'].value.trim();
 
-    if (!name && !count) {
-      showFeedback('Bitte Name oder Personenanzahl eintragen.');
+    if (status === 'nein') {
+      if (!name) {
+        showFeedback('Bitte Name eintragen.');
+        return false;
+      }
+      return true;
+    }
+
+    // status === 'ja'
+    if (!name || !count) {
+      showFeedback('Bitte Name und Anzahl eintragen.');
       return false;
     }
 
-    if (count) {
-      var parsed = parseInt(count, 10);
-      if (!/^[0-9]+$/.test(count) || parsed < 1 || parsed > 20) {
-        showFeedback('Personenanzahl bitte zwischen 1 und 20.');
-        return false;
-      }
+    var parsed = parseInt(count, 10);
+    if (!/^[0-9]+$/.test(count) || parsed < 1 || parsed > 20) {
+      showFeedback('Personenanzahl bitte zwischen 1 und 20.');
+      return false;
     }
 
     return true;
   }
 
   function submit(status) {
-    if (!isValid()) return;
+    if (!isValid(status)) return;
     var payloadCount = status === 'nein' ? '' : (form.elements['count'].value || '');
 
     fetch('/rsvp', {
@@ -460,7 +470,7 @@ ${resetDone ? '<div class="notice">Reset complete.</div>' : ''}
   html += `</div></div>`;
 
   html += `<div class="summary"><h2>Overview</h2><table><tr><th>Group</th><th>Visits</th><th>Yes</th><th>People (est.)</th><th>No</th></tr>`;
-  for (const g of ['Mack', 'Utz', '00WC', 'FFW', 'Sonstige']) {
+  for (const g of Object.values(GROUPS)) {
     const data = grouped[g] || { ja: [], nein: [] };
     const personCount = data.ja.reduce((sum, r) => {
       const c = parseInt(r.count, 10);
