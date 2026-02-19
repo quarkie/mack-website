@@ -496,6 +496,35 @@ ${resetDone ? '<div class="notice">Reset complete.</div>' : ''}
   return html;
 }
 
+function render404() {
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>40</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
+<style>
+:root { --background-body:#0a0c0b; --background:#0a0c0b; --text-main:#e8e8e8; --links:#7a9a89; }
+body {
+  max-width:600px; margin:0 auto; padding:0;
+  background:#0a0c0b; color:#e8e8e8;
+  font-family:system-ui,-apple-system,sans-serif;
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+}
+h1 { color:#5c7c6b; font-size:5rem; margin:0 0 .4rem; letter-spacing:-.02em; }
+p { color:#7a9a89; margin:0; }
+</style>
+</head>
+<body>
+<h1>404</h1>
+<p>Diese Seite existiert nicht.</p>
+</body>
+</html>`;
+}
+
 function renderMujre() {
   const rows = Object.entries(GROUPS)
     .map(([path, group]) => `<tr><td>${escapeHtml(group)}</td><td><code>${escapeHtml(path)}</code></td></tr>`)
@@ -935,7 +964,20 @@ export default {
       });
     }
 
-    return new Response('404', { status: 404 });
+    // Smart 404: redirect known visitors to their group route
+    const cookies404 = request.headers.get('Cookie') || '';
+    const vidMatch404 = cookies404.match(/vid=([^;]+)/);
+    if (vidMatch404) {
+      const vid = vidMatch404[1];
+      for (const [route, group] of Object.entries(GROUPS)) {
+        const visit = await env.RSVP.get(`visit:${group}:${vid}`);
+        if (visit) {
+          return Response.redirect(`${url.origin}${route}`, 302);
+        }
+      }
+    }
+
+    return new Response(render404(), { status: 404, headers: { 'Content-Type': 'text/html;charset=utf-8' } });
   },
 };
 
